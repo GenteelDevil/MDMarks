@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
 import time
 import datetime
 import os
 import re
+
+mdpath = "./"
 
 # 1. find all md file
 def findAllMDFile(base):
@@ -13,7 +16,6 @@ def findAllMDFile(base):
 
 # 2. judge modify time of file
 def judgeModifyTime(path):
-    today = datetime.date.today()
     modifytime = os.path.getatime(path)
     modifytime = datetime.datetime.fromtimestamp(modifytime)
     modifytime = modifytime.strftime("%Y-%m-%d")
@@ -21,13 +23,34 @@ def judgeModifyTime(path):
 
 # 3. get mark list and pend to file
 def pendMDMark(path):
-    oldfopen = open(path, 'r')
-    newfopen = open(path, 'a')
-    for eachline in oldfopen:
-        if re.match("([Qu：]|[Cm：])", eachline.strip()):
-            newfopen.write(eachline)
+    marks = []
+    marks_flag = False
+    with open(path, "r+") as f:
+        line = f.readline()
+        while line:
+            if re.match("[Qu：]|[Cm：]", line):
+                marks.append(line.strip())
+            if re.match("## Marks*", line):
+                marks_flag = True
+                break
+            line = f.readline()
+            print(line)
+        if marks_flag == False:
+            f.write("## Mark\n")
+        print(marks_flag)
+        for each in marks:
+            f.write(each)
+
+
+
+# main
+def main():
+    today = datetime.date.today()
+    print(today)
+    for each in findAllMDFile(mdpath):
+        print(each)
+        pendMDMark(each)
+    
 
 if __name__ == '__main__':
-   for i in findAllMDFile('./'):
-       print(i)
-       pendMDMark(i)
+    main()
